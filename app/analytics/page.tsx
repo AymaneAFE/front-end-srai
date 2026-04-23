@@ -2,9 +2,7 @@
 
 import { SidebarNav } from "@/components/dashboard/sidebar-nav"
 import { Header } from "@/components/dashboard/header"
-import { MetricsCards } from "@/components/dashboard/metrics-cards"
 import { IncidentTrendChart, AlertsBySourceChart } from "@/components/dashboard/trend-charts"
-import { mockMetrics } from "@/lib/mock-data"
 
 /**
  * Analytics dashboard — trends, historical metrics, and performance charts.
@@ -26,19 +24,11 @@ export default function AnalyticsPage() {
         />
 
         <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-[1600px] mx-auto space-y-8">
-            {/* Key metrics overview */}
-            <section aria-labelledby="metrics-heading">
-              <h2 id="metrics-heading" className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">
-                Key Metrics
-              </h2>
-              <MetricsCards metrics={mockMetrics} />
-            </section>
-
-            {/* Trends and patterns */}
+          <div className="max-w-[1600px] mx-auto">
+            {/* Analytics trends */}
             <section aria-labelledby="trends-heading">
               <h2 id="trends-heading" className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">
-                Trends
+                Incident Trends
               </h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <IncidentTrendChart />

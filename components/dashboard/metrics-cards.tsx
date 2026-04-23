@@ -6,7 +6,6 @@ import {
   Clock,
   CheckCircle2,
   Activity,
-  Filter,
   Sparkles,
 } from "lucide-react"
 import type { MetricSnapshot } from "@/lib/mock-data"
@@ -18,20 +17,13 @@ interface MetricsCardsProps {
 
 export function MetricsCards({ metrics }: MetricsCardsProps) {
   const primary = {
-    label: "Noise reduction",
-    value: `${metrics.noiseReductionPct.toFixed(1)}%`,
-    hint: `${metrics.alertsToday} alerts → ${metrics.openIncidents + 15} incidents today`,
-    icon: Filter,
+    label: "Open incidents",
+    value: metrics.openIncidents.toString(),
+    hint: `${metrics.criticalCount} critical · ${metrics.warningCount} warning`,
+    icon: AlertTriangle,
   }
 
   const secondary = [
-    {
-      label: "Open",
-      value: metrics.openIncidents.toString(),
-      hint: `${metrics.criticalCount} critical · ${metrics.warningCount} warning`,
-      icon: AlertTriangle,
-      accent: metrics.criticalCount > 0 ? "text-severity-critical" : "text-muted-foreground",
-    },
     {
       label: "MTTR",
       value: `${metrics.mttrMinutes}m`,
