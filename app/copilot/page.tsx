@@ -213,25 +213,25 @@ export default function CopilotPage() {
         />
 
         <main className="flex-1 p-6 overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[calc(100vh-180px)]">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 h-[calc(100vh-180px)]">
             {/* Thread history (left rail).
                 Standard chat UX pattern — without this, the surface
                 looks ephemeral and the SRE never believes their
                 annotations feed the knowledge base. */}
             <aside className="lg:col-span-1 hidden lg:flex flex-col">
               <Card className="bg-card border-border flex-1 flex flex-col">
-                <CardHeader className="pb-3 flex-row items-center justify-between">
-                  <CardTitle className="text-sm font-medium">
+                <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2">
+                  <CardTitle className="text-sm font-medium truncate">
                     Conversations
                   </CardTitle>
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-7 px-2"
+                    className="h-6 w-6 p-0 flex-shrink-0"
                     onClick={handleNewThread}
                     aria-label="Start new conversation"
                   >
-                    <Plus className="w-3.5 h-3.5" />
+                    <Plus className="w-4 h-4" />
                   </Button>
                 </CardHeader>
                 <CardContent className="p-0 flex-1">
@@ -254,7 +254,7 @@ export default function CopilotPage() {
                               <p className="text-xs font-medium text-foreground truncate">
                                 {thread.title}
                               </p>
-                              <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                              <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 leading-tight">
                                 {thread.preview}
                               </p>
                               <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">

@@ -3,12 +3,10 @@
 import { useState } from "react"
 import { SidebarNav } from "@/components/dashboard/sidebar-nav"
 import { Header } from "@/components/dashboard/header"
-import { MetricsCards } from "@/components/dashboard/metrics-cards"
 import { IncidentFeed } from "@/components/dashboard/incident-feed"
 import { IncidentDetail } from "@/components/dashboard/incident-detail"
-import { IncidentTrendChart, AlertsBySourceChart } from "@/components/dashboard/trend-charts"
 import { CopilotSlideOver } from "@/components/dashboard/copilot-slideover"
-import { mockIncidents, mockMetrics, type Incident } from "@/lib/mock-data"
+import { mockIncidents, type Incident } from "@/lib/mock-data"
 import { Button } from "@/components/ui/button"
 import { Sparkles } from "lucide-react"
 
@@ -47,10 +45,10 @@ export default function DashboardPage() {
         />
 
         <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-[1600px] mx-auto space-y-6">
-            {/* 1. Active work — the reason the user opened the page. */}
+          <div className="max-w-[1600px] mx-auto">
+            {/* Active work — focused on incident triage */}
             <section aria-labelledby="active-queue-heading">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-4">
                 <h2 id="active-queue-heading" className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                   Active queue
                 </h2>
@@ -63,7 +61,7 @@ export default function DashboardPage() {
                   Ask Copilot
                 </Button>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 h-[calc(100vh-200px)]">
                 <div className="lg:col-span-2">
                   <IncidentFeed
                     incidents={mockIncidents}
@@ -76,23 +74,6 @@ export default function DashboardPage() {
                     <IncidentDetail incident={selectedIncident} />
                   )}
                 </div>
-              </div>
-            </section>
-
-            {/* 2. KPI strip — dense row, not the hero. */}
-            <section aria-labelledby="kpi-strip-heading">
-              <h2 id="kpi-strip-heading" className="sr-only">Key metrics</h2>
-              <MetricsCards metrics={mockMetrics} />
-            </section>
-
-            {/* 3. Supporting trends — below the fold. */}
-            <section aria-labelledby="trends-heading">
-              <h2 id="trends-heading" className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-3">
-                Trends
-              </h2>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <IncidentTrendChart />
-                <AlertsBySourceChart />
               </div>
             </section>
           </div>

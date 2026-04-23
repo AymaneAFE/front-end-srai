@@ -104,10 +104,10 @@ export function CopilotSlideOver({ isOpen, onClose, incident }: CopilotSlideOver
       <div
         role="dialog"
         aria-label="Incident Copilot"
-        className="fixed inset-y-0 right-0 w-full max-w-md bg-card border-l border-border z-50 flex flex-col animate-in slide-in-from-right duration-300 shadow-2xl"
+        className="fixed inset-y-0 right-0 w-full max-w-md bg-gradient-to-b from-card to-card/95 border-l border-border z-50 flex flex-col animate-in slide-in-from-right duration-300 shadow-2xl"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-border">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-accent" />

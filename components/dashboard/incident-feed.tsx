@@ -26,8 +26,8 @@ export function IncidentFeed({
   selectedIncidentId,
 }: IncidentFeedProps) {
   return (
-    <Card className="bg-card border-border h-full">
-      <CardHeader className="pb-3">
+    <Card className="bg-card border-border h-full bg-gradient-to-b from-card to-card/95">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-medium">Active Incidents</CardTitle>
           <Button variant="ghost" size="sm" className="text-muted-foreground">
@@ -74,7 +74,7 @@ export function IncidentFeed({
                         {getStatusLabel(incident.status)}
                       </Badge>
                     </div>
-                    <p className="font-medium text-sm text-foreground truncate">
+                    <p className="font-medium text-sm text-foreground truncate underline decoration-dashed decoration-border hover:decoration-solid transition-all">
                       {incident.title}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">

@@ -66,7 +66,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
     <Card className="bg-card border-border">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-y md:divide-y-0 md:divide-x divide-border">
         {/* Hero metric — spans 2 columns on lg */}
-        <div className="col-span-2 lg:col-span-2 p-5 bg-accent/5">
+        <div className="col-span-2 lg:col-span-2 p-6 bg-accent/5">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -86,7 +86,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
         </div>
 
         {secondary.map((m) => (
-          <div key={m.label} className="p-4">
+          <div key={m.label} className="p-5">
             <div className="flex items-center gap-2 text-muted-foreground">
               <m.icon className={cn("w-3.5 h-3.5", m.accent)} />
               <p className="text-[11px] font-medium uppercase tracking-wider">

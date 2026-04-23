@@ -70,8 +70,8 @@ function AlertItem({ alert }: { alert: Alert }) {
 
 export function IncidentDetail({ incident }: IncidentDetailProps) {
   return (
-    <Card className="bg-card border-border h-full">
-      <CardHeader className="pb-3">
+    <Card className="bg-card border-border h-full bg-gradient-to-b from-card to-card/95">
+      <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">

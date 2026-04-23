@@ -13,6 +13,7 @@ import {
   Search,
   Bell,
   Microscope,
+  TrendingUp,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -21,6 +22,7 @@ const navigation = [
   { name: "Overview", href: "/", icon: LayoutDashboard },
   { name: "Incidents", href: "/incidents", icon: AlertTriangle },
   { name: "Copilot", href: "/copilot", icon: MessageSquare },
+  { name: "Analytics", href: "/analytics", icon: TrendingUp },
 ]
 
 /**
