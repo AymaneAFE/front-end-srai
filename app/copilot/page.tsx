@@ -3,7 +3,6 @@
 import { useMemo, useRef, useState, useEffect } from "react"
 import { SidebarNav } from "@/components/dashboard/sidebar-nav"
 import { Header } from "@/components/dashboard/header"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -14,14 +13,9 @@ import {
   Sparkles,
   User,
   Search,
-  FileText,
-  GitBranch,
-  AlertTriangle,
-  Database,
-  Activity,
   Plus,
-  MessageSquare,
   ShieldAlert,
+  Clock,
 } from "lucide-react"
 import {
   mockIncidents,
@@ -55,45 +49,6 @@ import Link from "next/link"
  *    context. Replaced with an active-incidents context panel scoped to the
  *    current thread.
  */
-
-const suggestedPrompts = [
-  {
-    icon: AlertTriangle,
-    title: "Summarize active incidents",
-    description: "Read the current feed",
-    prompt: "Summarize all current active incidents and their status",
-  },
-  {
-    icon: Search,
-    title: "Investigate logs",
-    description: "Search ELK for recent errors",
-    prompt: "Search logs for connection timeout errors in the last hour",
-  },
-  {
-    icon: GitBranch,
-    title: "Correlate recent deployments",
-    description: "Match commits to active incidents",
-    prompt: "Show me deployments in the last 24 hours that might be related to current issues",
-  },
-  {
-    icon: FileText,
-    title: "Draft a post-mortem",
-    description: "Propose a report template",
-    prompt: "Draft a post-mortem for the database connection incident",
-  },
-  {
-    icon: Database,
-    title: "Database health snapshot",
-    description: "Read current connection counts",
-    prompt: "Show the health status of all database connections",
-  },
-  {
-    icon: Activity,
-    title: "Performance review",
-    description: "Read the last 6 hours of metrics",
-    prompt: "Summarise performance metrics for api-gateway over the last 6 hours",
-  },
-]
 
 const WELCOME_MESSAGE: ChatMessage = {
   id: "welcome",
@@ -202,53 +157,111 @@ export default function CopilotPage() {
     setActiveThreadId(fresh.id)
   }
 
+  // ── date grouping for thread list ──────────────────────────────────────────
+  const [threadSearch, setThreadSearch] = useState("")
+
+  const filteredThreads = useMemo(() => {
+    if (!threadSearch.trim()) return threads
+    const q = threadSearch.toLowerCase()
+    return threads.filter(
+      (t) =>
+        t.title.toLowerCase().includes(q) ||
+        t.incidentId?.toLowerCase().includes(q),
+    )
+  }, [threads, threadSearch])
+
+  const groupedThreads = useMemo(() => {
+    const now = new Date()
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const startOfYesterday = new Date(startOfToday)
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1)
+    return {
+      today: filteredThreads.filter((t) => t.lastMessageAt >= startOfToday),
+      yesterday: filteredThreads.filter(
+        (t) => t.lastMessageAt >= startOfYesterday && t.lastMessageAt < startOfToday,
+      ),
+      older: filteredThreads.filter((t) => t.lastMessageAt < startOfYesterday),
+    }
+  }, [filteredThreads])
+
   return (
     <div className="flex min-h-screen bg-background">
       <SidebarNav />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <Header
           title="Incident Copilot"
           subtitle="Read-only assistant · proposes, never executes"
         />
 
-        <main className="flex-1 p-6 overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[calc(100vh-180px)]">
-            {/* Thread history (left rail).
-                Standard chat UX pattern — without this, the surface
-                looks ephemeral and the SRE never believes their
-                annotations feed the knowledge base. */}
-            <aside className="lg:col-span-1 hidden lg:flex flex-col overflow-hidden">
-              <Card className="bg-card border-border flex-1 flex flex-col overflow-hidden">
-                <CardHeader className="pb-2 border-b border-border shrink-0">
-                  <CardTitle className="text-sm font-medium">Conversations</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0 flex-1 flex flex-col min-h-0">
-                  <ScrollArea className="flex-1">
-                    <div className="p-2 space-y-0.5">
-                      {threads.map((thread) => {
+        {/* Three-pane layout — fixed widths so the thread list is never squeezed */}
+        <div className="flex-1 flex overflow-hidden">
+
+          {/* ── Left rail: thread list ──────────────────────────────────────── */}
+          <aside className="hidden lg:flex flex-col w-[260px] shrink-0 border-r border-border bg-sidebar overflow-hidden">
+            {/* New conversation — top CTA */}
+            <div className="p-3 border-b border-border shrink-0">
+              <Button
+                className="w-full gap-2 justify-start"
+                size="sm"
+                onClick={handleNewThread}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                New conversation
+              </Button>
+            </div>
+
+            {/* Search */}
+            <div className="px-3 py-2 border-b border-border shrink-0">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  value={threadSearch}
+                  onChange={(e) => setThreadSearch(e.target.value)}
+                  placeholder="Search…"
+                  className="pl-8 h-8 text-xs bg-secondary border-border"
+                />
+              </div>
+            </div>
+
+            {/* Thread list */}
+            <ScrollArea className="flex-1">
+              <div className="py-2">
+                {(["today", "yesterday", "older"] as const).map((group) => {
+                  const items = groupedThreads[group]
+                  if (items.length === 0) return null
+                  const label = group === "today" ? "Today" : group === "yesterday" ? "Yesterday" : "Older"
+                  return (
+                    <div key={group} className="mb-1">
+                      <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                        {label}
+                      </p>
+                      {items.map((thread) => {
                         const isActive = thread.id === activeThread.id
                         return (
                           <button
                             key={thread.id}
                             onClick={() => setActiveThreadId(thread.id)}
                             className={cn(
-                              "w-full text-left px-2.5 py-2.5 rounded-md transition-colors overflow-hidden",
+                              "w-full text-left px-3 py-2.5 transition-colors relative",
                               isActive
-                                ? "bg-accent/15 border border-accent/30"
-                                : "hover:bg-secondary/80 border border-transparent",
+                                ? "bg-accent/10 text-foreground before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-accent before:rounded-r"
+                                : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
                             )}
                           >
                             <p className={cn(
-                              "text-xs font-medium truncate leading-tight",
-                              isActive ? "text-foreground" : "text-foreground/80"
+                              "text-[13px] leading-snug line-clamp-2 break-words",
+                              isActive ? "font-medium text-foreground" : "font-normal",
                             )}>
                               {thread.title}
                             </p>
-                            <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
-                              <span>{formatTimeAgo(thread.lastMessageAt)}</span>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <Clock className="w-3 h-3 text-muted-foreground/50 shrink-0" />
+                              <span className="text-[11px] text-muted-foreground/70">
+                                {formatTimeAgo(thread.lastMessageAt)}
+                              </span>
                               {thread.incidentId && (
-                                <span className="font-mono text-accent/70 truncate">
+                                <span className="text-[11px] font-mono text-accent/60 truncate">
                                   · {thread.incidentId}
                                 </span>
                               )}
@@ -257,240 +270,141 @@ export default function CopilotPage() {
                         )
                       })}
                     </div>
-                  </ScrollArea>
-                  {/* New conversation — full-width, at bottom of list */}
-                  <div className="p-2 border-t border-border shrink-0">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full text-xs gap-1.5"
-                      onClick={handleNewThread}
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      New conversation
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </aside>
+                  )
+                })}
+                {filteredThreads.length === 0 && (
+                  <p className="px-3 py-6 text-xs text-muted-foreground text-center">
+                    No conversations match your search.
+                  </p>
+                )}
+              </div>
+            </ScrollArea>
+          </aside>
 
-            {/* Chat column */}
-            <section className="lg:col-span-3 flex flex-col h-full">
-              <Card className="bg-card border-border flex-1 flex flex-col">
-                <CardContent className="flex-1 flex flex-col p-0">
-                  {/* Thread header — makes the current context obvious */}
-                  <div className="border-b border-border px-5 py-3 flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {activeThread.title}
-                      </p>
-                      {linkedIncident && (
-                        <Link
-                          href={`/incidents/${linkedIncident.id}`}
-                          className="text-xs text-muted-foreground hover:text-accent transition-colors font-mono"
-                        >
-                          {linkedIncident.id} · {linkedIncident.title}
-                        </Link>
+          {/* ── Center: conversation window (no card border) ─────────────────── */}
+          <section className="flex-1 flex flex-col overflow-hidden">
+
+            {/* Thread header */}
+            <div className="shrink-0 border-b border-border px-6 h-[52px] flex items-center justify-between gap-4 bg-background">
+              <div className="min-w-0">
+                <span className="text-sm font-medium text-foreground truncate">
+                  {activeThread.title}
+                </span>
+                {linkedIncident && (
+                  <Link
+                    href={`/incidents/${linkedIncident.id}`}
+                    className="ml-3 text-xs text-muted-foreground hover:text-accent transition-colors font-mono"
+                  >
+                    {linkedIncident.id}
+                  </Link>
+                )}
+              </div>
+              <Badge
+                variant="outline"
+                className="text-[10px] gap-1.5 bg-secondary/60 text-muted-foreground border-border shrink-0"
+              >
+                <ShieldAlert className="w-3 h-3" />
+                Read-only
+              </Badge>
+            </div>
+
+            {/* Messages */}
+            <ScrollArea className="flex-1" ref={scrollRef}>
+              <div className="py-8 px-6 space-y-6 max-w-3xl mx-auto">
+                {activeThread.messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={cn(
+                      "flex gap-3",
+                      message.role === "user" && "flex-row-reverse",
+                    )}
+                  >
+                    {/* Avatar */}
+                    <div
+                      className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5",
+                        message.role === "assistant" ? "bg-accent/20" : "bg-secondary",
+                      )}
+                    >
+                      {message.role === "assistant" ? (
+                        <Sparkles className="w-3.5 h-3.5 text-accent" />
+                      ) : (
+                        <User className="w-3.5 h-3.5 text-muted-foreground" />
                       )}
                     </div>
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] gap-1.5 bg-secondary text-muted-foreground border-border"
-                    >
-                      <ShieldAlert className="w-3 h-3" />
-                      Read-only
-                    </Badge>
-                  </div>
 
-                  {/* Messages */}
-                  <ScrollArea className="flex-1 p-6" ref={scrollRef}>
-                    <div className="space-y-6 max-w-3xl mx-auto">
-                      {activeThread.messages.map((message) => (
-                        <div
-                          key={message.id}
-                          className={cn(
-                            "flex gap-4",
-                            message.role === "user" && "flex-row-reverse",
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0",
-                              message.role === "assistant"
-                                ? "bg-accent/20"
-                                : "bg-secondary",
-                            )}
-                          >
-                            {message.role === "assistant" ? (
-                              <Sparkles className="w-4 h-4 text-accent" />
-                            ) : (
-                              <User className="w-4 h-4 text-muted-foreground" />
-                            )}
-                          </div>
-                          <div
-                            className={cn(
-                              "flex-1 max-w-2xl",
-                              message.role === "user" && "text-right",
-                            )}
-                          >
-                            <div
-                              className={cn(
-                                "inline-block px-4 py-3 rounded-xl text-left",
-                                message.role === "assistant"
-                                  ? "bg-secondary text-foreground"
-                                  : "bg-accent text-accent-foreground",
-                              )}
-                            >
-                              {message.role === "assistant" ? (
-                                <Markdown content={message.content} />
-                              ) : (
-                                <p className="text-sm whitespace-pre-wrap">
-                                  {message.content}
-                                </p>
-                              )}
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-2">
-                              {formatTimeAgo(message.timestamp)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-
-                      {isTyping && (
-                        <div className="flex gap-4">
-                          <div className="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center">
-                            <Sparkles className="w-4 h-4 text-accent" />
-                          </div>
-                          <div className="px-4 py-3 rounded-xl bg-secondary">
-                            <div className="flex gap-1">
-                              <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" />
-                              <span
-                                className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
-                                style={{ animationDelay: "0.1s" }}
-                              />
-                              <span
-                                className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
-                                style={{ animationDelay: "0.2s" }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </ScrollArea>
-
-                  {/* Input */}
-                  <div className="p-4 border-t border-border">
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault()
-                        handleSend(input)
-                      }}
-                      className="max-w-3xl mx-auto"
-                    >
-                      <div className="flex gap-3">
-                        <Input
-                          value={input}
-                          onChange={(e) => setInput(e.target.value)}
-                          placeholder="Ask about incidents, logs, deployments, or system health…"
-                          className="flex-1 bg-secondary border-border h-11"
-                        />
-                        <Button
-                          type="submit"
-                          size="lg"
-                          disabled={!input.trim() || isTyping}
-                          className="h-11 px-5"
-                        >
-                          <Send className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground mt-2 text-center">
-                        Responses are AI-generated. Verify before acting —
-                        Copilot will not run anything on your behalf.
-                      </p>
-                    </form>
-                  </div>
-                </CardContent>
-              </Card>
-            </section>
-
-            {/* Context rail (right).
-                Scoped to the current thread: suggestions + active-incident
-                context. The old "Connected Sources" card was removed — it
-                duplicated the global SidebarNav. */}
-            <aside className="lg:col-span-1 space-y-4 overflow-y-auto">
-              <Card className="bg-card border-border">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">
-                    Suggested Prompts
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-1.5 px-2 pb-3">
-                  {suggestedPrompts.map((prompt, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSend(prompt.prompt)}
-                      className="w-full text-left p-2.5 rounded-md hover:bg-secondary transition-colors group"
-                    >
-                      <div className="flex items-start gap-2.5">
-                        <prompt.icon className="w-3.5 h-3.5 text-accent flex-shrink-0 mt-0.5" />
-                        <div className="min-w-0">
-                          <p className="text-xs font-medium text-foreground leading-tight">
-                            {prompt.title}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-                            {prompt.description}
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">
-                    Open incidents
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {mockIncidents
-                    .filter((i) => i.status !== "validated" && i.status !== "aborted")
-                    .slice(0, 3)
-                    .map((incident) => (
-                      <Link
-                        key={incident.id}
-                        href={`/incidents/${incident.id}`}
-                        className="block p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
+                    {/* Bubble */}
+                    <div className={cn("flex flex-col gap-1 max-w-[75%]", message.role === "user" && "items-end")}>
+                      <div
+                        className={cn(
+                          "px-4 py-3 rounded-2xl text-sm text-left",
+                          message.role === "assistant"
+                            ? "bg-secondary text-foreground rounded-tl-sm"
+                            : "bg-accent text-accent-foreground rounded-tr-sm",
+                        )}
                       >
-                        <div className="flex items-center justify-between mb-1">
-                          <Badge
-                            className={cn(
-                              "text-[10px]",
-                              incident.severity === "critical"
-                                ? "bg-severity-critical/15 text-severity-critical border border-severity-critical/30"
-                                : incident.severity === "warning"
-                                  ? "bg-severity-warning/15 text-severity-warning border border-severity-warning/30"
-                                  : "bg-severity-unknown/15 text-severity-unknown border border-severity-unknown/30",
-                            )}
-                          >
-                            {incident.severity}
-                          </Badge>
-                          <span className="text-[10px] text-muted-foreground font-mono">
-                            {incident.id}
-                          </span>
-                        </div>
-                        <p className="text-xs text-foreground line-clamp-2 leading-snug">
-                          {incident.title}
-                        </p>
-                      </Link>
-                    ))}
-                </CardContent>
-              </Card>
-            </aside>
-          </div>
-        </main>
+                        {message.role === "assistant" ? (
+                          <Markdown content={message.content} />
+                        ) : (
+                          <p className="whitespace-pre-wrap">{message.content}</p>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-muted-foreground/60 px-1">
+                        {formatTimeAgo(message.timestamp)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Typing indicator */}
+                {isTyping && (
+                  <div className="flex gap-3">
+                    <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
+                      <Sparkles className="w-3.5 h-3.5 text-accent" />
+                    </div>
+                    <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-secondary">
+                      <div className="flex gap-1 items-center h-4">
+                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0.15s" }} />
+                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0.3s" }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+
+            {/* Input */}
+            <div className="shrink-0 border-t border-border px-6 py-4 bg-background">
+              <form
+                onSubmit={(e) => { e.preventDefault(); handleSend(input) }}
+                className="max-w-3xl mx-auto"
+              >
+                <div className="flex gap-2">
+                  <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Ask about incidents, logs, deployments, or system health…"
+                    className="flex-1 bg-secondary border-border h-10 rounded-xl"
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={!input.trim() || isTyping}
+                    className="h-10 w-10 rounded-xl shrink-0"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground/60 mt-2 text-center">
+                  AI-generated — verify before acting. Copilot will not run anything on your behalf.
+                </p>
+              </form>
+            </div>
+
+          </section>
+
+        </div>{/* end three-pane */}
       </div>
     </div>
   )

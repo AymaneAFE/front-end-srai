@@ -14,7 +14,6 @@ import {
   AlertTriangle,
   Bot,
   User,
-  ArrowRight,
   BanIcon,
   ExternalLink,
   Clock,
@@ -27,34 +26,16 @@ import {
   getSeverityLabel,
   getStatusDotClass,
   getStatusLabel,
-  allowedTransitions,
   isTerminal,
   getLatestHypothesis,
-  type IncidentStatus,
 } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
-
-function transitionLabel(from: IncidentStatus, to: IncidentStatus): string {
-  const map: Partial<Record<`${IncidentStatus}->${IncidentStatus}`, string>> = {
-    "detected->investigating": "Start investigation",
-    "detected->aborted": "Mark as aborted",
-    "investigating->waiting_for_review": "Submit for review",
-    "investigating->aborted": "Abort",
-    "waiting_for_review->reinvestigating": "Re-investigate",
-    "waiting_for_review->validated": "Validate",
-    "waiting_for_review->aborted": "Abort",
-    "reinvestigating->waiting_for_review": "Submit for review",
-    "reinvestigating->aborted": "Abort",
-  }
-  return map[`${from}->${to}`] ?? to
-}
 
 export default function IncidentOverviewPage() {
   const params = useParams()
   const incidentId = params.id as string
   const incident = mockIncidents.find((i) => i.id === incidentId) ?? mockIncidents[0]
 
-  const transitions = allowedTransitions(incident.status)
   const latestHypothesis = getLatestHypothesis(incident)
   const recentEvents = incident.investigation.slice(-4)
 
@@ -136,22 +117,7 @@ export default function IncidentOverviewPage() {
                   )}
                 </div>
 
-                {/* Transition buttons */}
-                {!isTerminal(incident.status) && transitions.length > 0 && (
-                  <div className="flex flex-wrap gap-2 shrink-0">
-                    {transitions.map((to) => (
-                      <Button
-                        key={to}
-                        size="sm"
-                        variant={to === "aborted" ? "outline" : "default"}
-                        onClick={() => console.log("transition", incident.status, "->", to)}
-                      >
-                        {transitionLabel(incident.status, to)}
-                        {to !== "aborted" && <ArrowRight className="w-3 h-3 ml-1" />}
-                      </Button>
-                    ))}
-                  </div>
-                )}
+                {/* Transitions are handled on the investigation page — no duplication here. */}
               </div>
             </CardContent>
           </Card>

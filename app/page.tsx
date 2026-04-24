@@ -99,19 +99,19 @@ export default function DashboardPage() {
 
   const kpis = [
     {
+      label: "Open incidents",
+      value: mockMetrics.openIncidents.toString(),
+      sub: `${mockMetrics.criticalCount} critical · ${mockMetrics.warningCount} warning`,
+      icon: AlertTriangle,
+      accent: mockMetrics.criticalCount > 0 ? "text-severity-critical" : "text-muted-foreground",
+      hero: true,
+    },
+    {
       label: "Noise reduction",
       value: `${mockMetrics.noiseReductionPct.toFixed(1)}%`,
       sub: `${mockMetrics.alertsToday} alerts → incidents today`,
       icon: Filter,
       accent: "text-accent",
-      hero: true,
-    },
-    {
-      label: "Open incidents",
-      value: mockMetrics.openIncidents.toString(),
-      sub: `${mockMetrics.criticalCount} critical`,
-      icon: AlertTriangle,
-      accent: mockMetrics.criticalCount > 0 ? "text-severity-critical" : "text-muted-foreground",
     },
     {
       label: "Needs review",

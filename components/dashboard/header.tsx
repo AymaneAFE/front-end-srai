@@ -46,8 +46,18 @@ export function Header({ title, subtitle }: HeaderProps) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Account menu">
-              <User className="w-4 h-4" />
+            <Button
+              variant="ghost"
+              className="flex items-center gap-2.5 px-2 h-8 hover:bg-secondary"
+              aria-label="Account menu"
+            >
+              <div className="flex items-center justify-center w-7 h-7 rounded-full bg-accent/20 shrink-0">
+                <User className="w-3.5 h-3.5 text-accent" />
+              </div>
+              <div className="hidden md:flex flex-col items-start leading-tight">
+                <span className="text-xs font-medium text-foreground">Aymane Fajr</span>
+                <span className="text-[10px] text-muted-foreground">SRE</span>
+              </div>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
