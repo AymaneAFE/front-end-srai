@@ -69,7 +69,7 @@ export function SidebarNav() {
   return (
     <aside className="flex flex-col w-64 border-r border-border bg-sidebar min-h-screen">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border">
+      <div className="flex items-center gap-3 px-6 h-[64px] border-b border-sidebar-border">
         <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent">
           <Zap className="w-5 h-5 text-accent-foreground" />
         </div>

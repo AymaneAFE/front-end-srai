@@ -17,6 +17,8 @@ import {
   ArrowRight,
   BanIcon,
   ExternalLink,
+  Clock,
+  CheckCircle2,
 } from "lucide-react"
 import {
   mockIncidents,
@@ -180,10 +182,12 @@ export default function IncidentOverviewPage() {
                             ? "bg-chart-1 text-white"
                             : "bg-chart-5 text-white"
                         )}
+                        title={alert.source}
                       >
                         {alert.source[0].toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
+                        {/* Row 1: title + badges */}
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <span className="font-medium text-sm text-foreground">{alert.title}</span>
                           <Badge
@@ -196,6 +200,7 @@ export default function IncidentOverviewPage() {
                             <Badge
                               variant="outline"
                               className="text-[10px] font-mono border-border bg-secondary"
+                              title="Correlation score — how confident the engine was this alert belongs to the incident"
                             >
                               score {alert.correlation.score}
                             </Badge>
@@ -209,10 +214,32 @@ export default function IncidentOverviewPage() {
                               via LLM qualifier
                             </Badge>
                           )}
+                          {alert.clearedAtSource && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] gap-1 bg-status-validated/10 text-status-validated border-status-validated/30"
+                            >
+                              <CheckCircle2 className="w-3 h-3" />
+                              Cleared
+                            </Badge>
+                          )}
                         </div>
-                        <p className="text-xs text-muted-foreground">{alert.affectedService}</p>
+                        {/* Row 2: description */}
+                        <p className="text-xs text-foreground/80 leading-relaxed mb-1">
+                          {alert.description}
+                        </p>
+                        {/* Row 3: service + timestamp */}
+                        <div className="flex items-center gap-3 text-[10px] text-muted-foreground mb-1">
+                          <span className="font-mono">{alert.affectedService}</span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {formatTimeAgo(alert.timestamp)}
+                          </span>
+                          <span className="capitalize text-muted-foreground/70">{alert.source}</span>
+                        </div>
+                        {/* Row 4: correlation rationale */}
                         {alert.correlation?.rationale && (
-                          <p className="text-xs text-muted-foreground mt-1 italic">
+                          <p className="text-[11px] text-muted-foreground italic border-l-2 border-border pl-2">
                             {alert.correlation.rationale}
                           </p>
                         )}

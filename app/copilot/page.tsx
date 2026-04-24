@@ -218,59 +218,58 @@ export default function CopilotPage() {
                 Standard chat UX pattern — without this, the surface
                 looks ephemeral and the SRE never believes their
                 annotations feed the knowledge base. */}
-            <aside className="lg:col-span-1 hidden lg:flex flex-col">
-              <Card className="bg-card border-border flex-1 flex flex-col">
-                <CardHeader className="pb-3 flex-row items-center justify-between">
-                  <CardTitle className="text-sm font-medium">
-                    Conversations
-                  </CardTitle>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 px-2"
-                    onClick={handleNewThread}
-                    aria-label="Start new conversation"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </Button>
+            <aside className="lg:col-span-1 hidden lg:flex flex-col overflow-hidden">
+              <Card className="bg-card border-border flex-1 flex flex-col overflow-hidden">
+                <CardHeader className="pb-2 border-b border-border shrink-0">
+                  <CardTitle className="text-sm font-medium">Conversations</CardTitle>
                 </CardHeader>
-                <CardContent className="p-0 flex-1">
-                  <ScrollArea className="h-full">
-                    <div className="px-2 pb-2 space-y-1">
-                      {threads.map((thread) => (
-                        <button
-                          key={thread.id}
-                          onClick={() => setActiveThreadId(thread.id)}
-                          className={cn(
-                            "w-full text-left px-3 py-2 rounded-md transition-colors",
-                            "hover:bg-secondary/70",
-                            thread.id === activeThread.id &&
-                              "bg-secondary border-l-2 border-accent",
-                          )}
-                        >
-                          <div className="flex items-start gap-2">
-                            <MessageSquare className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-medium text-foreground truncate">
-                                {thread.title}
-                              </p>
-                              <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                                {thread.preview}
-                              </p>
-                              <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
-                                <span>{formatTimeAgo(thread.lastMessageAt)}</span>
-                                {thread.incidentId && (
-                                  <span className="font-mono">
-                                    {thread.incidentId}
-                                  </span>
-                                )}
-                              </div>
+                <CardContent className="p-0 flex-1 flex flex-col min-h-0">
+                  <ScrollArea className="flex-1">
+                    <div className="p-2 space-y-0.5">
+                      {threads.map((thread) => {
+                        const isActive = thread.id === activeThread.id
+                        return (
+                          <button
+                            key={thread.id}
+                            onClick={() => setActiveThreadId(thread.id)}
+                            className={cn(
+                              "w-full text-left px-2.5 py-2.5 rounded-md transition-colors overflow-hidden",
+                              isActive
+                                ? "bg-accent/15 border border-accent/30"
+                                : "hover:bg-secondary/80 border border-transparent",
+                            )}
+                          >
+                            <p className={cn(
+                              "text-xs font-medium truncate leading-tight",
+                              isActive ? "text-foreground" : "text-foreground/80"
+                            )}>
+                              {thread.title}
+                            </p>
+                            <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
+                              <span>{formatTimeAgo(thread.lastMessageAt)}</span>
+                              {thread.incidentId && (
+                                <span className="font-mono text-accent/70 truncate">
+                                  · {thread.incidentId}
+                                </span>
+                              )}
                             </div>
-                          </div>
-                        </button>
-                      ))}
+                          </button>
+                        )
+                      })}
                     </div>
                   </ScrollArea>
+                  {/* New conversation — full-width, at bottom of list */}
+                  <div className="p-2 border-t border-border shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-xs gap-1.5"
+                      onClick={handleNewThread}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      New conversation
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </aside>

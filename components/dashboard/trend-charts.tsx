@@ -32,15 +32,9 @@ import { incidentTrendData, alertsBySourceData } from "@/lib/mock-data"
 const NEW_COLOR = "var(--severity-warning)" // warm amber
 const RESOLVED_COLOR = "var(--chart-2)" // cool teal
 
-export function IncidentTrendChart() {
-  return (
-    <Card className="bg-card border-border">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium">Incident trend</CardTitle>
-        <p className="text-xs text-muted-foreground">Last 24 hours</p>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[200px]">
+export function IncidentTrendChart({ compact = false }: { compact?: boolean }) {
+  const chart = (
+        <div className={compact ? "h-[160px] px-4" : "h-[200px]"}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={incidentTrendData}
@@ -109,7 +103,15 @@ export function IncidentTrendChart() {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </CardContent>
+  )
+  if (compact) return chart
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base font-medium">Incident trend</CardTitle>
+        <p className="text-xs text-muted-foreground">Last 24 hours</p>
+      </CardHeader>
+      <CardContent>{chart}</CardContent>
     </Card>
   )
 }

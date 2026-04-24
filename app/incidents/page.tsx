@@ -36,9 +36,10 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
-  MoreHorizontal,
+  ChevronRight as RowArrow,
   Server,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
   mockIncidents,
@@ -59,6 +60,7 @@ function avgCorrelationScore(alerts: { correlation?: { score: number } }[]): num
 }
 
 export default function IncidentsPage() {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [severityFilter, setSeverityFilter] = useState("all")
@@ -160,7 +162,7 @@ export default function IncidentsPage() {
                     <TableHead className="text-muted-foreground">Services</TableHead>
                     <TableHead className="text-muted-foreground">Alerts</TableHead>
                     <TableHead className="text-muted-foreground">Created</TableHead>
-                    <TableHead className="text-muted-foreground w-10" />
+                    <TableHead className="text-muted-foreground w-8" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -169,7 +171,8 @@ export default function IncidentsPage() {
                     return (
                       <TableRow
                         key={incident.id}
-                        className="border-border hover:bg-secondary/30"
+                        className="border-border hover:bg-secondary/40 cursor-pointer"
+                        onClick={() => router.push(`/incidents/${incident.id}`)}
                       >
                         <TableCell className="font-mono text-sm">
                           <Link
@@ -263,29 +266,34 @@ export default function IncidentsPage() {
                             {formatTimeAgo(incident.createdAt)}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8"
+                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
                                 aria-label={`Actions for ${incident.id}`}
                               >
-                                <MoreHorizontal className="w-4 h-4" />
+                                <RowArrow className="w-4 h-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem asChild>
+                                <Link href={`/incidents/${incident.id}`}>
+                                  View overview
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
                                 <Link href={`/incidents/${incident.id}/investigation`}>
                                   <Microscope className="w-4 h-4 mr-2" />
-                                  Open investigation
+                                  Investigation
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem asChild>
                                 <Link href={`/incidents/${incident.id}/report`}>
                                   <FileText className="w-4 h-4 mr-2" />
-                                  View report
+                                  Report
                                 </Link>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
